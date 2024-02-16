@@ -105,10 +105,8 @@ int main(void)
   GPIOC->PUPDR &= ~(1 << 12); 
   GPIOC->PUPDR &= ~(1 << 13); 
 	
-	
-	// ENABLE TIM2 and TIM3
+	// ENABLE TIM2
 	RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
-	RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
 	
 	// Frequency target = 4, Fclock = 8 000 000
 	// 4 = 8 000 000 / ( (PSC + 1) * ARR )
@@ -126,8 +124,8 @@ int main(void)
 	// ENABLE INTERRUPT
 	NVIC_EnableIRQ(15);
 	
-	  // Enable timer 3 peripheral (TIM3) in the RCC
-  RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
+	// ENABLE TIM3
+	RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
 
 	// Frequency target = 800, Fclock = 8 000 000
 	// 800 = 8 000 000 / ( (PSC + 1) * ARR )
