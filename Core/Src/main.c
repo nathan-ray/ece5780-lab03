@@ -88,6 +88,29 @@ int main(void)
 	HAL_GPIO_Init(GPIOC, &initStr); // Initialize pins PC8 & PC9
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET); // Start PC9 high
 	
+	// Initialize LEDs 
+  // Blue LED (PC7)
+	// set to Alternate Function
+  GPIOC->MODER &= ~(1 << 14);
+  GPIOC->MODER |= (1 << 15);
+	
+  GPIOC->OTYPER &= ~(1 << 7);
+  GPIOC->OSPEEDR &= ~(1 << 14);
+  GPIOC->OSPEEDR &= ~(1 << 15);
+  GPIOC->PUPDR &= ~(1 << 14);
+  GPIOC->PUPDR &= ~(1 << 15);
+
+  // Red LED (PC6)
+	// set to Alternate Function
+  GPIOC->MODER &= ~(1 << 12);
+  GPIOC->MODER |= (1 << 13);
+	
+  GPIOC->OTYPER &= ~(1 << 6);
+  GPIOC->OSPEEDR &= ~(1 << 12);
+  GPIOC->OSPEEDR &= ~(1 << 13);
+  GPIOC->PUPDR &= ~(1 << 12); 
+  GPIOC->PUPDR &= ~(1 << 13); 
+	
 	
 	// ENABLE TIM2 and TIM3
 	RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
@@ -97,8 +120,8 @@ int main(void)
 	// 4 = 8 000 000 / ( (PSC + 1) * ARR )
 	// PSC + 1 = 2000, PSC = 1999
 	// ARR = 1000
-	TIM2->PSC |= 0x7CF;	// = 1999
-	TIM2->ARR |= 0x3E8; // = 2000
+	TIM2->PSC = 7999;	// = 1999
+	TIM2->ARR = 250; // = 1000
 	
 	// ENABLE UPDATE INTERRUPT
 	TIM2->DIER |= (1 << 0);
@@ -109,17 +132,63 @@ int main(void)
 	// ENABLE INTERRUPT
 	NVIC_EnableIRQ(15);
 	
-	
-	
+	  // Enable timer 3 peripheral (TIM3) in the RCC
+  RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
 
-  /* USER CODE BEGIN WHILE */
+  TIM3->PSC = 4; //1999
+  TIM3->ARR = 2500; // 5 
+	
+	/*
+  // Configure channel 1 (PC6 - Red LED) in PWM mode
+  TIM3->CCMR1 |= TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1PE;
+  TIM3->CCER |= TIM_CCER_CC1E;
+
+  // Configure channel 2 (PC7 - Blue LED) in PWM mode
+  TIM3->CCMR1 |= TIM_CCMR1_OC2M_2 | TIM_CCMR1_OC2M_1 | TIM_CCMR1_OC2PE;
+  TIM3->CCER |= TIM_CCER_CC2E;
+	*/
+	
+	// SET OUTPUT for channel 1
+	TIM3->CCMR1 &= ~(1 << 1);
+	TIM3->CCMR1 &= ~(1 << 0);
+	
+	// PWM Mode 2 for channel 1
+	TIM3->CCMR1 |= (1 << 6);
+	TIM3->CCMR1 |= (1 << 5);
+	TIM3->CCMR1 |= (1 << 4);
+	
+	// ENABLE OUTPUT for channel 1
+	TIM3->CCER |= (1 << 0);
+	
+	// ENABLE PRELOAD for channel 1
+	TIM3->CCMR1 |= (1 << 3);
+	
+	// SET OUTPUT for channel 2
+	TIM3->CCMR1 &= ~(1 << 9);
+	TIM3->CCMR1 &= ~(1 << 8);
+	
+	// PWM Mode 1 for channel 2
+	TIM3->CCMR1 |= (1 << 14);
+	TIM3->CCMR1 |= (1 << 13);
+	TIM3->CCMR1 &= ~(1 << 12);
+	
+	// ENABLE OUTPUT for channel 2
+	TIM3->CCER |= (1 << 4);
+	
+	// ENABLE PRELOAD for channel 2
+	TIM3->CCMR1 |= (1 << 11);
+	
+	// experimenting with different CCRx values, 100% and 20%
+  TIM3->CCR1 = 250; 
+  TIM3->CCR2 = 1000; 
+	
+	// ENABLE TIMER 3
+	TIM3->CR1 |= (1 << 0);
+
   while (1)
   {
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
+		
   }
-  /* USER CODE END 3 */
 }
 
 /**
