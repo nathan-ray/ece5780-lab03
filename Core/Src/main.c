@@ -48,6 +48,10 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 
+/*
+ * TIM2 interrupt request handler.
+ *
+ */
 void TIM2_IRQHandler() {
 	
 	// toggle pin
@@ -56,15 +60,6 @@ void TIM2_IRQHandler() {
 	// clearing status register
 	TIM2->SR &= ~(1 << 0);
 }
-
-/*
-void TIM3_IRQHandler() {
-	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8 | GPIO_PIN_9);
-	
-	// clearing pending register
-	EXTI->PR |= (1 << 0);
-}
-*/
 
 /**
   * @brief  The application entry point.
@@ -78,7 +73,6 @@ int main(void)
 	
 	// ENABLE LEDs
 	__HAL_RCC_GPIOC_CLK_ENABLE(); // Enable the GPIOC clock in the RCC
-	
 	
 	// Set up a configuration struct to pass to the initialization function
 	GPIO_InitTypeDef initStr = {GPIO_PIN_8 | GPIO_PIN_9,
@@ -135,18 +129,12 @@ int main(void)
 	  // Enable timer 3 peripheral (TIM3) in the RCC
   RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
 
-  TIM3->PSC = 4; //1999
-  TIM3->ARR = 2500; // 5 
-	
-	/*
-  // Configure channel 1 (PC6 - Red LED) in PWM mode
-  TIM3->CCMR1 |= TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1PE;
-  TIM3->CCER |= TIM_CCER_CC1E;
-
-  // Configure channel 2 (PC7 - Blue LED) in PWM mode
-  TIM3->CCMR1 |= TIM_CCMR1_OC2M_2 | TIM_CCMR1_OC2M_1 | TIM_CCMR1_OC2PE;
-  TIM3->CCER |= TIM_CCER_CC2E;
-	*/
+	// Frequency target = 800, Fclock = 8 000 000
+	// 800 = 8 000 000 / ( (PSC + 1) * ARR )
+	// PSC + 1 = 4, PSC = 3
+	// ARR = 2500
+  TIM3->PSC = 3;
+  TIM3->ARR = 2500;
 	
 	// SET OUTPUT for channel 1
 	TIM3->CCMR1 &= ~(1 << 1);
@@ -179,8 +167,8 @@ int main(void)
 	TIM3->CCMR1 |= (1 << 11);
 	
 	// experimenting with different CCRx values, 100% and 20%
-  TIM3->CCR1 = 250; 
-  TIM3->CCR2 = 1000; 
+  TIM3->CCR1 = 50; 
+  TIM3->CCR2 = 50; 
 	
 	// ENABLE TIMER 3
 	TIM3->CR1 |= (1 << 0);
